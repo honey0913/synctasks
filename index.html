@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#1e1e1e" media="(prefers-color-scheme: dark)">
+  <title>Productivity Note</title>
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Google GAPI (Drive / Calendar) -->
+  <script src="https://apis.google.com/js/api.js" async defer></script>
+  <!-- Google Identity Services (OAuth) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════
+       로딩 화면
+  ══════════════════════════════════════ -->
+  <div id="loading-screen" class="screen active">
+    <div class="loading-card">
+      <h1 class="app-title">Productivity<br>Note</h1>
+      <div class="loading-items">
+        <div class="loading-item"><span class="circle"></span><span class="line"></span></div>
+        <div class="loading-item"><span class="circle"></span><span class="line"></span></div>
+        <div class="loading-item"><span class="circle"></span><span class="line"></span></div>
+      </div>
+      <p class="loading-credit">Design by Honey Ryu</p>
+      <span class="loading-version">ver.001</span>
+    </div>
+
+    <button id="btn-signin" class="btn-google-signin" style="display:none;">
+      🔑 Google 계정으로 시작하기
+    </button>
+    <p id="loading-status" class="loading-status"></p>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       메인 앱
+  ══════════════════════════════════════ -->
+  <div id="main-app" class="screen">
+
+    <!-- 헤더 -->
+    <header>
+      <h1 class="app-title">Productivity<br>Note</h1>
+    </header>
+
+    <!-- 탭 네비게이션 -->
+    <nav class="tabs">
+      <button class="tab active" data-tab="todo">To-do</button>
+      <button class="tab"        data-tab="done">Done</button>
+      <button class="tab"        data-tab="habit">Habit</button>
+      <button class="tab"        data-tab="today">Today</button>
+    </nav>
+
+    <!-- ─── To-do 탭 ─── -->
+    <div id="tab-todo" class="tab-content active">
+      <div class="tab-toolbar">
+        <button id="btn-add-task" class="btn-add">＋ 추가</button>
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button id="btn-select-file" class="btn-select-file">Select File</button>
+          <button id="btn-sync"        class="btn-sync">⟳ Sync</button>
+        </div>
+      </div>
+      <ul id="todo-list" class="task-list"></ul>
+    </div>
+
+    <!-- ─── Done 탭 ─── -->
+    <div id="tab-done" class="tab-content">
+      <div class="tab-toolbar" style="position:relative;">
+        <span></span><!-- 왼쪽 공백 -->
+        <div style="display:flex;gap:8px;align-items:center;">
+          <button id="btn-filter"   class="btn-filter">▾ Filter</button>
+          <button id="btn-sync-done" class="btn-sync">⟳ Sync</button>
+        </div>
+
+        <!-- 필터 드롭다운 -->
+        <div id="filter-dropdown" class="filter-dropdown hidden">
+          <p class="filter-label">Date</p>
+          <div class="filter-grid">
+            <button class="filter-btn" data-filter="today">Today</button>
+            <button class="filter-btn" data-filter="next_year">next year</button>
+            <button class="filter-btn" data-filter="next_day">next day</button>
+            <button class="filter-btn" data-filter="last_year">last year</button>
+            <button class="filter-btn" data-filter="next_week">next week</button>
+            <button class="filter-btn" data-filter="last_week">last week</button>
+            <button class="filter-btn" data-filter="next_month">next month</button>
+            <button class="filter-btn" data-filter="last_month">last month</button>
+            <button class="filter-btn filter-btn--all" data-filter="all">전체 보기</button>
+          </div>
+        </div>
+      </div>
+      <ul id="done-list" class="task-list"></ul>
+    </div>
+
+    <!-- ─── Habit 탭 ─── -->
+    <div id="tab-habit" class="tab-content">
+      <div class="tab-toolbar">
+        <button id="btn-graph-view" class="btn-graph-view active">📈 graph view</button>
+        <button id="btn-add-habit" class="btn-add-habit">＋ add habit</button>
+      </div>
+      <div class="week-chart-container" id="week-chart-container">
+        <div class="week-chart-header">
+          <span class="week-label">This week</span>
+        </div>
+        <div class="week-chart-wrap" id="week-chart-wrap">
+          <canvas id="week-chart"></canvas>
+        </div>
+      </div>
+      <ul id="habit-list" class="habit-list"></ul>
+    </div>
+
+    <!-- ─── Today 탭 ─── -->
+    <div id="tab-today" class="tab-content">
+      <div class="today-brief">
+        <h2>Today Brief</h2>
+        <div id="brief-content"></div>
+      </div>
+
+      <div class="calendar-container">
+        <div class="calendar-header">
+          <button id="cal-prev" class="cal-nav">‹</button>
+          <span   id="cal-month-label" class="cal-month"></span>
+          <button id="cal-next" class="cal-nav">›</button>
+        </div>
+
+        <!-- 요일 헤더 -->
+        <div class="calendar-grid">
+          <div class="cal-weekday">S</div>
+          <div class="cal-weekday">M</div>
+          <div class="cal-weekday">T</div>
+          <div class="cal-weekday">W</div>
+          <div class="cal-weekday">T</div>
+          <div class="cal-weekday">F</div>
+          <div class="cal-weekday">S</div>
+        </div>
+
+        <!-- 날짜 셀 (JS로 채워짐) -->
+        <div id="calendar-days" class="calendar-days"></div>
+      </div>
+    </div>
+
+  </div><!-- /#main-app -->
+
+
+  <!-- ══════════════════════════════════════
+       모달: 할 일 추가 / 편집
+  ══════════════════════════════════════ -->
+  <div id="modal-task" class="modal hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content">
+      <h3 id="modal-task-title">할 일 추가</h3>
+      <input id="task-input-title" type="text"  placeholder="할 일을 입력하세요" class="modal-input">
+      <div class="modal-row">
+        <label>📆 날짜</label>
+        <input id="task-input-date" type="date" class="modal-input-sm">
+      </div>
+      <div class="modal-row">
+        <label>⏰ 시간</label>
+        <input id="task-input-time" type="text" placeholder="예: 17:00~18:00" class="modal-input-sm">
+      </div>
+      <div class="modal-row">
+        <label>📍 장소</label>
+        <input id="task-input-pin"  type="text" placeholder="장소를 입력하세요" class="modal-input-sm">
+      </div>
+      <div class="modal-row">
+        <label>📝 메모</label>
+        <input id="task-input-note" type="text" placeholder="메모를 입력하세요" class="modal-input-sm">
+      </div>
+      <div class="modal-buttons">
+        <button id="btn-task-save"   class="btn-primary">저장</button>
+        <button id="btn-task-cancel" class="btn-secondary">취소</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       모달: 습관 추가
+  ══════════════════════════════════════ -->
+  <div id="modal-habit" class="modal modal-center hidden">
+    <div class="modal-overlay"></div>
+    <div class="modal-content modal-content-card">
+      <h3>add habit</h3>
+      <div class="modal-row">
+        <button id="btn-habit-add-item" class="btn-secondary" style="width:60px;flex-shrink:0;">추가</button>
+        <input  id="habit-input-name" type="text" placeholder="추가할 항목 작성" class="modal-input-sm flex-1">
+      </div>
+      <button id="btn-habit-done" class="btn-primary full-width">Done</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       모달: Sync 방향 선택
+  ══════════════════════════════════════ -->
+  <div id="modal-sync" class="modal hidden" style="align-items:center;justify-content:center;">
+    <div class="modal-overlay"></div>
+    <div class="modal-content" style="border-radius:20px;width:calc(100% - 48px);max-width:320px;gap:12px;">
+      <h3>동기화</h3>
+      <div class="sync-btn-group">
+        <button id="btn-sync-pull" class="sync-option-btn">
+          <span class="sync-option-icon">⬇</span> Drive → 앱 불러오기
+          <div class="sync-option-desc">MD 파일을 직접 편집한 경우 사용</div>
+        </button>
+        <button id="btn-sync-push" class="sync-option-btn">
+          <span class="sync-option-icon">⬆</span> 앱 → Drive 저장
+          <div class="sync-option-desc">앱의 변경사항을 Drive에 저장</div>
+        </button>
+      </div>
+      <button id="btn-sync-cancel" class="btn-secondary">취소</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════
+       모달: Select File (To-do DB 파일 변경)
+  ══════════════════════════════════════ -->
+  <div id="modal-select-file" class="modal-select-file hidden">
+    <div class="modal-select-file-card">
+      <button id="btn-close-select-file" class="modal-close-btn">✕</button>
+      <h3 class="modal-select-title">select md</h3>
+      <div class="modal-select-field">
+        <label class="modal-select-label">경로</label>
+        <input id="input-task-path" type="text" class="modal-select-input" placeholder="예: 01.Project/synctasks">
+      </div>
+      <div class="modal-select-field">
+        <label class="modal-select-label">파일명</label>
+        <input id="input-task-filename" type="text" class="modal-select-input" placeholder="예: tasksdb.md">
+      </div>
+      <button id="btn-done-select-file" class="btn-primary full-width" style="margin-top:8px;">Done</button>
+    </div>
+  </div>
+
+  <!-- Toast 알림 -->
+  <div id="toast"></div>
+
+  <!-- ══════════════════════════════════════
+       JavaScript 로드 순서 중요
+  ══════════════════════════════════════ -->
+  <script src="js/parser.js"></script>
+  <script src="js/drive.js"></script>
+  <script src="js/calendar.js"></script>
+  <script src="js/habit.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
