@@ -8,10 +8,6 @@
   <title>Productivity Note</title>
   <link rel="stylesheet" href="css/style.css">
 
-  <!-- Google GAPI (Drive / Calendar) -->
-  <script src="https://apis.google.com/js/api.js" async defer></script>
-  <!-- Google Identity Services (OAuth) -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
 
@@ -31,7 +27,7 @@
     </div>
 
     <button id="btn-signin" class="btn-google-signin" style="display:none;">
-      🔑 Google 계정으로 시작하기
+      🔑 GitHub Gist 연결하기
     </button>
     <p id="loading-status" class="loading-status"></p>
   </div>
@@ -59,7 +55,7 @@
       <div class="tab-toolbar">
         <button id="btn-add-task" class="btn-add">＋ 추가</button>
         <div style="display:flex;gap:8px;align-items:center;">
-          <button id="btn-select-file" class="btn-select-file">Select File</button>
+          <button id="btn-select-file" class="btn-select-file" style="display:none;">Select File</button>
           <button id="btn-sync"        class="btn-sync">⟳ Sync</button>
         </div>
       </div>
