@@ -104,6 +104,9 @@ const Drive = {
         box-shadow:0 8px 32px rgba(0,0,0,0.2);
       ">
         <h3 style="margin:0;font-size:18px;">GitHub Gist 연결</h3>
+        <p style="margin:0;font-size:12px;color:var(--text-muted,#888);line-height:1.6;">
+          💡 모바일과 PC에서 <strong>같은 Gist ID</strong>를 입력하면<br>두 기기의 데이터가 자동으로 공유됩니다
+        </p>
 
         <div style="display:flex;flex-direction:column;gap:6px;">
           <label style="font-size:13px;font-weight:600;">🔑 Personal Access Token</label>
@@ -193,6 +196,7 @@ const Drive = {
         localStorage.setItem('github_pat', pat);
         localStorage.setItem('github_gist_id', gistId);
         this._hideSettingsModal();
+        this._showToast('✅ Gist 연결 완료! 모바일에서도 같은 Gist ID를 입력하면 데이터가 공유됩니다.');
         this._onSuccess && this._onSuccess({});
       } catch (e) {
         errEl.textContent = `연결 오류: ${e.message}`;
@@ -206,5 +210,23 @@ const Drive = {
   _hideSettingsModal() {
     const el = document.getElementById('gist-settings-modal');
     if (el) el.remove();
+  },
+
+  _showToast(msg) {
+    const existing = document.getElementById('gist-toast');
+    if (existing) existing.remove();
+    const t = document.createElement('div');
+    t.id = 'gist-toast';
+    t.style.cssText = [
+      'position:fixed', 'bottom:24px', 'left:50%', 'transform:translateX(-50%)',
+      'background:rgba(0,0,0,0.8)', 'color:#fff',
+      'padding:10px 18px', 'border-radius:20px',
+      'font-size:13px', 'z-index:99999',
+      'max-width:90vw', 'text-align:center',
+      'pointer-events:none',
+    ].join(';');
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 4000);
   },
 };
